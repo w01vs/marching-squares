@@ -69,46 +69,60 @@ void draw_point(const int index, const Color c)
 	DrawRectangle(x(index) * CELL - 3, y(index) * CELL - 3, 6, 6, c);
 }
 
-void draw_case(const int idx, const unsigned char type)
+void draw_case(const int idx, float data[])
 {
 	const int y_ = y(idx) * CELL;
 	const int x_ = x(idx) * CELL;
-	switch(type)
+	switch((unsigned char)(data[0] + (data[1] * 2) + (data[2] * 4) + (data[3] * 8)))
 	{
-	case 1:
-	case 14:
-		DrawLine(x_ + CELL / 2, y_, x_, y_ + CELL / 2, BLACK);
-		break;
-	case 2:
-	case 13:
-		DrawLine(x_ + CELL / 2, y_, x_ + CELL, y_ + CELL / 2, BLACK);
-		break;
-	case 4:
-	case 11:
-		DrawLine(x_ + CELL, y_ + CELL / 2, x_ + CELL / 2, y_ + CELL, BLACK);
-		break;
-	case 5:
-		DrawLine(x_ + CELL / 2, y_, x_, y_ + CELL / 2, BLACK);
-		DrawLine(x_ + CELL, y_ + CELL / 2, x_ + CELL / 2, y_ + CELL, BLACK);
-		break;
-	case 7:
-	case 8:
-		DrawLine(x_, y_ + CELL / 2, x_ + CELL / 2, y_ + CELL, BLACK);
-		break;
-	case 6:
-	case 9:
-		DrawLine(x_ + CELL / 2, y_, x_ + CELL / 2, y_ + CELL, BLACK);
-		break;
-	case 10:
-		DrawLine(x_, y_ + CELL / 2, x_ + CELL / 2, y_ + CELL, BLACK);
-		DrawLine(x_ + CELL / 2, y_, x_ + CELL, y_ + CELL / 2, BLACK);
-		break;
-	case 3:
-	case 12:
-		DrawLine(x_, y_ + CELL / 2, x_ + CELL, y_ + CELL / 2, BLACK);
-		break;
-	default:
-		break;
+		case 1:
+		case 14:
+		/*
+		 move the line according to point values.
+		 in case 14
+		 *--/-o
+		 | /  |
+		 |/   |
+		 |    |
+		 o----o
+
+		 the top left corner is lower than  0.5f
+		 move the top edge intersection to the right with topleft/ topleft+topright / 2 * CELL
+		 move the left edge intersection to the top with topleft/ topleft+bottomleft / 2 * CELL
+		 
+		*/
+			DrawLine(x_ + CELL / 2, y_, x_, y_ + CELL / 2, BLACK);
+			break;
+		case 2:
+		case 13:
+			DrawLine(x_ + CELL / 2, y_, x_ + CELL, y_ + CELL / 2, BLACK);
+			break;
+		case 4:
+		case 11:
+			DrawLine(x_ + CELL, y_ + CELL / 2, x_ + CELL / 2, y_ + CELL, BLACK);
+			break;
+		case 5:
+			DrawLine(x_ + CELL / 2, y_, x_, y_ + CELL / 2, BLACK);
+			DrawLine(x_ + CELL, y_ + CELL / 2, x_ + CELL / 2, y_ + CELL, BLACK);
+			break;
+		case 7:
+		case 8:
+			DrawLine(x_, y_ + CELL / 2, x_ + CELL / 2, y_ + CELL, BLACK);
+			break;
+		case 6:
+		case 9:
+			DrawLine(x_ + CELL / 2, y_, x_ + CELL / 2, y_ + CELL, BLACK);
+			break;
+		case 10:
+			DrawLine(x_, y_ + CELL / 2, x_ + CELL / 2, y_ + CELL, BLACK);
+			DrawLine(x_ + CELL / 2, y_, x_ + CELL, y_ + CELL / 2, BLACK);
+			break;
+		case 3:
+		case 12:
+			DrawLine(x_, y_ + CELL / 2, x_ + CELL, y_ + CELL / 2, BLACK);
+			break;
+		default:
+			break;
 	}
 }
 
@@ -119,8 +133,9 @@ void march_squares(const Source& src)
 	{
 		if(i > WIDTH && i % WIDTH == WIDTH - 1) continue;
 		// For now use 0 or 1, interpolation later
-		const int vals[4] = {arr[i] < 0.5 ? 0 : 1, arr[i + 1] < 0.5 ? 0 : 1, arr[i + WIDTH + 1] < 0.5 ? 0 : 1, arr[i + WIDTH] < 0.5 ? 0 : 1};
-		draw_case(i, (unsigned char)(vals[0] + (vals[1] * 2) + (vals[2] * 4) + (vals[3] * 8)));
+		float vals[4] = {arr[i] < 0.5 ? 0.0f : 1.0f, arr[i + 1] < 0.5 ? 0.0f : 1.0f, arr[i + WIDTH + 1] < 0.5 ? 0.0f : 1.0f, arr[i + WIDTH] < 0.5 ? 0.0f : 1.0f};
+		float pure_vals[4] = { arr[i] , arr[i + 1], arr[i + WIDTH + 1], arr[i + WIDTH] };
+		draw_case(i, vals);
 	}
 }
 
