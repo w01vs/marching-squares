@@ -42,23 +42,23 @@ struct Index
 }
 
 // Range is inclusive on both ends
-int random(const int min, const int max)
+float random(const float min, const float max)
 {
 	if(min == max)
 		return min;
 	std::random_device rd;
 	std::mt19937 eng(rd());
 
-	std::uniform_int_distribution<> distr(min, max);
-	return distr(eng);
+	std::uniform_real_distribution<> distr(min, max);
+	return (float)distr(eng);
 }
 
-std::array<int, (size_t)TOTAL> gen_source()
+std::array<float, (size_t)TOTAL> gen_source()
 {
-	std::array<int, (size_t)TOTAL> res = {};
+	std::array<float, (size_t)TOTAL> res = {};
 	for(int i = 0; i < TOTAL; ++i)
 	{
-		res[i] = random(-CELL / 2, CELL / 2);
+		res[i] = random(0, 1);
 	}
 
 	return res;
@@ -114,25 +114,25 @@ void draw_case(const int idx, const unsigned char type)
 
 void march_squares(const Source& src)
 {
-	const std::array<int, (size_t)TOTAL> arr = src.arr;
+	const std::array<float, (size_t)TOTAL> arr = src.arr;
 	for(int i = 0; i < (int)arr.size() - WIDTH; ++i)
 	{
 		if(i > WIDTH && i % WIDTH == WIDTH - 1) continue;
 		// For now use 0 or 1, interpolation later
-		const int vals[4] = {arr[i] < 0 ? 0 : 1, arr[i + 1] < 0 ? 0 : 1, arr[i + WIDTH + 1] < 0 ? 0 : 1, arr[i + WIDTH] < 0 ? 0 : 1};
+		const int vals[4] = {arr[i] < 0.5 ? 0 : 1, arr[i + 1] < 0.5 ? 0 : 1, arr[i + WIDTH + 1] < 0.5 ? 0 : 1, arr[i + WIDTH] < 0.5 ? 0 : 1};
 		draw_case(i, (unsigned char)(vals[0] + (vals[1] * 2) + (vals[2] * 4) + (vals[3] * 8)));
 	}
 }
 
 void draw_points(const Source& src)
 {
-	const std::array<int, (size_t)TOTAL> arr = src.arr;
-	for(size_t i = 0; i < arr.size(); ++i)
+	const std::array<float, (size_t)TOTAL> arr = src.arr;
+	for(int i = 0; i < (int)arr.size(); ++i)
 	{
 		if(i > WIDTH && i % WIDTH == WIDTH) continue;
-		const auto c = (unsigned char)((float)(arr[i] + 10) / 20 * 255);
+		const auto c = (unsigned char)((arr[i] + 10) / 20 * 255);
 		//const auto color = Color{ c, c, c, 255 }; // for interpolation stuff
-		const auto color = arr[i] < 0 ? BLACK : WHITE;
+		const auto color = arr[i] < 0.5 ? BLACK : WHITE;
 		draw_point(i, color);
 	}
 }
