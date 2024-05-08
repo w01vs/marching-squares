@@ -20,7 +20,7 @@ bool Game::GameShouldClose() const
 
 void Game::Init()
 {
-	src = {gen_source() };
+	src = Source{gen_source()};
 }
 
 void Game::Tick()

@@ -16,10 +16,10 @@ float random(const float min, const float max)
 	return (float)distr(eng);
 }
 
-std::array<float, (size_t)TOTAL> gen_source()
+std::array<float, (size_t)TOTAL>* gen_source()
 {
-	std::array<float, (size_t)TOTAL> res = {};
-	for(int i = 0; i < TOTAL; ++i) { res[i] = random(0, 1); }
+	std::array<float, (size_t)TOTAL>* res = new std::array<float, (size_t)TOTAL>;
+	for(int i = 0; i < TOTAL; ++i) { (*res)[i] = random(0, 1); }
 
 	return res;
 }
@@ -96,35 +96,35 @@ void draw_case(const int idx, float data[], float cases[], const Color color = G
 
 void march_squares(const Source& src)
 {
-	const std::array<float, (size_t)TOTAL> arr = src.arr;
-	for(int i = 0; i < (int)arr.size() - WIDTH; ++i)
+	const std::array<float, (size_t)TOTAL>* arr = src.arr;
+	for(int i = 0; i < (int)arr->size() - WIDTH; ++i)
 	{
 		if(i > WIDTH && i % WIDTH == WIDTH - 1)
 			continue;
 		// For now use 0 or 1, interpolation later
 		float vals[4] = {
-			arr[i],
-			arr[i + 1],
-			arr[i + WIDTH + 1],
-			arr[i + WIDTH]
+			arr->at(i),
+			arr->at(i + 1),
+			arr->at(i + WIDTH + 1),
+			arr->at(i + WIDTH)
 		};
 
-		for(int i = 0; i < 4; i++)
+		for(int j = 0; j < 4; j++)
 		{
-			vals[i] = (vals[i] + 1.0f) / 2.0f;
-			vals[i] = vals[i] < INTERPOLATE_THRESHOLD ? -vals[i] : vals[i];
+			vals[j] = (vals[j] + 1.0f) / 2.0f;
+			vals[j] = vals[j] < INTERPOLATE_THRESHOLD ? -vals[j] : vals[j];
 		}
-		float pure_vals[4] = {arr[i] < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr[i + 1] < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr[i + WIDTH + 1] < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr[i + WIDTH] < ACTIVE_THRESHOLD ? 0.0f : 1.0f};
-		draw_case(i, vals, pure_vals);
+		float pure_vals[4] = {arr->at(i) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH) < ACTIVE_THRESHOLD ? 0.0f : 1.0f};
+		draw_case(i, vals, pure_vals, GREEN, true);
 	}
 }
 
 void draw_points(const Source& src)
 {
-	const std::array<float, (size_t)TOTAL> arr = src.arr;
-	for(int i = 0; i < (int)arr.size(); ++i)
+	const std::array<float, (size_t)TOTAL>* arr = src.arr;
+	for(int i = 0; i < (int)arr->size(); ++i)
 	{
-		const float cf = arr[i] * 255;
+		const float cf = arr->at(i) * 255;
 		const auto c = (unsigned char)(cf < 0 ? 0 : cf);
 		const auto color = Color{ c, c, c, 255 }; // for interpolation stuff
 		//const auto color = arr[i] < THRESHOLD ? BLACK : WHITE;
@@ -135,14 +135,14 @@ void draw_points(const Source& src)
 
 void draw_inside(const Source& src)
 {
-	const std::array<float, (size_t)TOTAL> arr = src.arr;
-	for(int i = 0; i < (int)arr.size(); ++i)
+	const std::array<float, (size_t)TOTAL>* arr = src.arr;
+	for(int i = 0; i < (int)arr->size(); ++i)
 	{
 		Color color;
-		if(arr[i] <= 0) color = BLACK;
+		if(arr->at(i) <= 0) color = BLACK;
 		else
 		{
-			const auto c = (unsigned char)(arr[i] * 255);
+			const auto c = (unsigned char)(arr->at(i) * 255);
 			color = Color{c, c, c, 255};
 		}
 		DrawRectangle(x(i) * CELL, y(i) * CELL, CELL, CELL, color);
@@ -151,21 +151,21 @@ void draw_inside(const Source& src)
  
 void print_points(const Source& src)
 {
-	const std::array<float, (size_t)TOTAL> arr = src.arr;
+	const std::array<float, (size_t)TOTAL>* arr = src.arr;
 	std::cout << "{\n";
 	int w = WIDTH;
-	for(int i = 0; i < (int)arr.size() - 1; ++i)
+	for(int i = 0; i < (int)arr->size() - 1; ++i)
 	{
 		if(w == 0)
 		{
 			w = WIDTH;
 			std::cout << "\n";
 		}
-		std::cout << arr[i] << ", ";
+		std::cout << arr->at(i) << ", ";
 		w--;
 	}
 
-	std::cout << arr[arr.size() - 1] << " ";
+	std::cout << arr->at(arr->size() - 1) << " ";
 	std::cout << "\n}" << std::endl;
 }
 
@@ -174,14 +174,14 @@ void sample_noise(Source& src)
 	osn_context* ctx;
 	open_simplex_noise(1234, &ctx); // 1234 is the seed
 	
-	for(int i = 0; i < (int)src.arr.size(); i++)
+	for(int i = 0; i < (int)src.arr->size(); i++)
 	{
 		const int _x = i % WIDTH;
 		const int _y = i / WIDTH;
 
 		src.xoff = (float)_x * src.inc;
 		src.yoff = (float)_y * src.inc;
-		src.arr[i] = (float)open_simplex_noise3(ctx, src.xoff, src.yoff, src.zoff);
+		(*src.arr)[i] = (float)open_simplex_noise3(ctx, src.xoff, src.yoff, src.zoff);
 	}
 
 	open_simplex_noise_free(ctx);
