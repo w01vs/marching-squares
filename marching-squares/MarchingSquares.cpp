@@ -42,6 +42,11 @@ void draw_case(const int idx, float data[])
 {
 	const int y_ = y(idx) * CELL;
 	const int x_ = x(idx) * CELL;
+	// data order:
+	// top left
+	// top right
+	// bottom right
+	// bottom left
 	switch((unsigned char)(data[0] + (data[1] * 2) + (data[2] * 4) + (data[3] * 8)))
 	{
 		case 1:
@@ -58,7 +63,6 @@ void draw_case(const int idx, float data[])
 		 the top left corner is lower than  0.5f
 		 move the top edge intersection to the right with topleft/ topleft+topright / 2 * CELL
 		 move the left edge intersection to the top with topleft/ topleft+bottomleft / 2 * CELL
-		 
 		*/
 			DrawLine(x_ + CELL / 2, y_, x_, y_ + CELL / 2, BLACK);
 			break;
