@@ -24,9 +24,9 @@ std::array<float, (size_t)TOTAL> gen_source()
 	return res;
 }
 
-void draw_point(const int index, const Color c) { DrawRectangle(x(index) * CELL - 2, y(index) * CELL - 1, 4, 4, c); }
+void draw_point(const int index, const Color c) { DrawRectangle(x(index) * CELL - 2, y(index) * CELL - 2, 4, 4, c); }
 
-void draw_case(const int idx, float data[], float cases[], const bool interpolate = false)
+void draw_case(const int idx, float data[], float cases[], const Color color = GREEN, const bool interpolate = false)
 {
 	const float y_ = (float)y(idx) * (CELL * 1);
 	const float x_ = (float)x(idx) * (CELL * 1);
@@ -59,35 +59,35 @@ void draw_case(const int idx, float data[], float cases[], const bool interpolat
 	{
 	case 1:
 	case 14:
-		DrawLineV(top_edge, left_edge, BLACK);
+		DrawLineV(top_edge, left_edge, color);
 		break;
 	case 2:
 	case 13:
-		DrawLineV(top_edge, right_edge, BLACK);
+		DrawLineV(top_edge, right_edge, color);
 		break;
 	case 4:
 	case 11:
-		DrawLineV(right_edge, bottom_edge, BLACK);
+		DrawLineV(right_edge, bottom_edge, color);
 		break;
 	case 5:
-		DrawLineV(top_edge, left_edge, BLACK);
-		DrawLineV(right_edge, bottom_edge, BLACK);
+		DrawLineV(top_edge, left_edge, color);
+		DrawLineV(right_edge, bottom_edge, color);
 		break;
 	case 7:
 	case 8:
-		DrawLineV(bottom_edge, left_edge, BLACK);
+		DrawLineV(bottom_edge, left_edge, color);
 		break;
 	case 6:
 	case 9:
-		DrawLineV(top_edge, bottom_edge, BLACK);
+		DrawLineV(top_edge, bottom_edge, color);
 		break;
 	case 10:
-		DrawLineV(top_edge, right_edge, BLACK);
-		DrawLineV(bottom_edge, left_edge, BLACK);
+		DrawLineV(top_edge, right_edge, color);
+		DrawLineV(bottom_edge, left_edge, color);
 		break;
 	case 3:
 	case 12:
-		DrawLineV(left_edge, right_edge, BLACK);
+		DrawLineV(left_edge, right_edge, color);
 		break;
 	default:
 		break;
@@ -103,12 +103,18 @@ void march_squares(const Source& src)
 			continue;
 		// For now use 0 or 1, interpolation later
 		float vals[4] = {
-			arr[i] < 0.5 ? -arr[i] : arr[i],
-			arr[i + 1] < 0.5 ? -arr[i + 1] : arr[i + 1],
-			arr[i + WIDTH + 1] < 0.5 ? -arr[i + WIDTH + 1] : arr[i + WIDTH + 1],
-			arr[i + WIDTH] < 0.5 ? -arr[i + WIDTH] : arr[i + WIDTH]
+			arr[i],
+			arr[i + 1],
+			arr[i + WIDTH + 1],
+			arr[i + WIDTH]
 		};
-		float pure_vals[4] = { arr[i] < 0.5f ? 0.0f : 1.0f, arr[i + 1] < 0.5f ? 0.0f : 1.0f, arr[i + WIDTH + 1] < 0.5f ? 0.0f : 1.0f, arr[i + WIDTH] < 0.5f ? 0.0f : 1.0f};
+
+		for(int i = 0; i < 4; i++)
+		{
+			vals[i] = (vals[i] + 1.0f) / 2.0f;
+			vals[i] = vals[i] < INTERPOLATE_THRESHOLD ? -vals[i] : vals[i];
+		}
+		float pure_vals[4] = {arr[i] < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr[i + 1] < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr[i + WIDTH + 1] < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr[i + WIDTH] < ACTIVE_THRESHOLD ? 0.0f : 1.0f};
 		draw_case(i, vals, pure_vals);
 	}
 }
@@ -118,15 +124,31 @@ void draw_points(const Source& src)
 	const std::array<float, (size_t)TOTAL> arr = src.arr;
 	for(int i = 0; i < (int)arr.size(); ++i)
 	{
-		if(i > WIDTH && i % WIDTH == WIDTH)
-			continue;
-		const auto c = (unsigned char)(arr[i] * 255);
-		//const auto color = Color{ c, c, c, 255 }; // for interpolation stuff
-		const auto color = arr[i] < 0.5 ? BLACK : WHITE;
-		draw_point(i, color);
+		const float cf = arr[i] * 255;
+		const auto c = (unsigned char)(cf < 0 ? 0 : cf);
+		const auto color = Color{ c, c, c, 255 }; // for interpolation stuff
+		//const auto color = arr[i] < THRESHOLD ? BLACK : WHITE;
+		if(c > 122) 
+			draw_point(i, color);
 	}
 }
 
+void draw_inside(const Source& src)
+{
+	const std::array<float, (size_t)TOTAL> arr = src.arr;
+	for(int i = 0; i < (int)arr.size(); ++i)
+	{
+		Color color;
+		if(arr[i] <= 0) color = BLACK;
+		else
+		{
+			const auto c = (unsigned char)(arr[i] * 255);
+			color = Color{c, c, c, 255};
+		}
+		DrawRectangle(x(i) * CELL, y(i) * CELL, CELL, CELL, color);
+	}
+}
+ 
 void print_points(const Source& src)
 {
 	const std::array<float, (size_t)TOTAL> arr = src.arr;
@@ -147,7 +169,7 @@ void print_points(const Source& src)
 	std::cout << "\n}" << std::endl;
 }
 
-void sample_perlin(Source& src)
+void sample_noise(Source& src)
 {
 	osn_context* ctx;
 	open_simplex_noise(1234, &ctx); // 1234 is the seed
@@ -159,7 +181,6 @@ void sample_perlin(Source& src)
 
 		src.xoff = (float)_x * src.inc;
 		src.yoff = (float)_y * src.inc;
-
 		src.arr[i] = (float)open_simplex_noise3(ctx, src.xoff, src.yoff, src.zoff);
 	}
 

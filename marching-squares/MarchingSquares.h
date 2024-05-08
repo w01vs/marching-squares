@@ -6,6 +6,8 @@
 #include <random>
 #include "OpenSimplex.h"
 
+#define INTERPOLATE_THRESHOLD 0.5f
+#define ACTIVE_THRESHOLD 0
 
 enum
 {
@@ -25,8 +27,9 @@ struct Source
 	float zoff = 0;
 };
 
+void draw_inside(const Source& src);
 void march_squares(const Source& src);
-void sample_perlin(Source& src);
+void sample_noise(Source& src);
 void draw_points(const Source& src);
 void print_points(const Source& src);
 float random(float, float);

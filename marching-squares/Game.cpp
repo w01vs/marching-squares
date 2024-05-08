@@ -33,12 +33,14 @@ void Game::Tick()
 
 void Game::Draw() const
 {
-	ClearBackground(GREEN);
+	ClearBackground(BLACK);
+	draw_inside(src);
 	march_squares(src);
-	draw_points(src);
+	//draw_points(src);
+	
 }
 
 void Game::Update()
 {
-	sample_perlin(src);
+	sample_noise(src);
 }
