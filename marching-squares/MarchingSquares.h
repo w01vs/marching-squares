@@ -7,7 +7,7 @@
 
 enum
 {
-	CELL = 20,
+	CELL = 10,
 	WIDTH = SCREEN_WIDTH / CELL + 1,
 	HEIGHT = SCREEN_HEIGHT / CELL + 1,
 	TOTAL = WIDTH * HEIGHT
@@ -20,6 +20,7 @@ struct Source
 
 void march_squares(const Source& src);
 void draw_points(const Source& src);
+void print_points(const Source& src);
 float random(float, float);
 std::array<float, (size_t)TOTAL> gen_source();
 [[nodiscard]] int x(int);

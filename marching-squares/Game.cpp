@@ -21,6 +21,7 @@ bool Game::GameShouldClose() const
 void Game::Init()
 {
 	src = {gen_source()};
+	//print_points(src);
 }
 
 void Game::Tick()
