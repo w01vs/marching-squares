@@ -1,36 +1,5 @@
 #include "MarchingSquares.h"
 
-struct Index
-{
-	int idx;
-	explicit Index(const int index)
-	{
-		idx = index;
-	}
-
-	explicit Index(const int x, const int y)
-	{
-		idx = y * WIDTH + x;
-	}
-
-	Index operator+(const Index& other) const
-	{
-		return Index(idx + other.idx);
-	}
-
-	void operator++()
-	{
-		idx += 1;
-	}
-
-	void operator++(int)
-	{
-		idx += 1;
-	}
-
-	
-};
-
 [[nodiscard]] int x(const int idx)
 {
 	return idx % WIDTH;
