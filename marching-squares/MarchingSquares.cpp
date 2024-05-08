@@ -19,7 +19,7 @@ float random(const float min, const float max)
 std::array<float, (size_t)TOTAL>* gen_source()
 {
 	std::array<float, (size_t)TOTAL>* res = new std::array<float, (size_t)TOTAL>;
-	for(int i = 0; i < TOTAL; ++i) { (*res)[i] = random(0, 1); }
+	for(int i = 0; i < TOTAL; ++i) { (*res)[i] = random(-1, 1); }
 
 	return res;
 }
@@ -115,7 +115,7 @@ void march_squares(const Source& src)
 			vals[j] = vals[j] < INTERPOLATE_THRESHOLD ? -vals[j] : vals[j];
 		}
 		float pure_vals[4] = {arr->at(i) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH) < ACTIVE_THRESHOLD ? 0.0f : 1.0f};
-		draw_case(i, vals, pure_vals, GREEN, true);
+		draw_case(i, vals, pure_vals, GREEN, false);
 	}
 }
 
@@ -127,8 +127,8 @@ void draw_points(const Source& src)
 		const float cf = arr->at(i) * 255;
 		const auto c = (unsigned char)(cf < 0 ? 0 : cf);
 		const auto color = Color{ c, c, c, 255 }; // for interpolation stuff
-		//const auto color = arr[i] < THRESHOLD ? BLACK : WHITE;
-		if(c > 122) 
+		//const auto color = (*arr)[i] < ACTIVE_THRESHOLD ? BLACK : WHITE;
+		if(c > 0) 
 			draw_point(i, color);
 	}
 }

@@ -22,8 +22,8 @@ struct Source
 	std::array<float, (size_t)TOTAL>* arr;
 	float xoff = 0;
 	float yoff = 0;
-	float inc = 0.085f;
-	float z_inc = 0.01f;
+	float inc = 0.055f;
+	float z_inc = 0.0035f;
 	float zoff = 0;
 
 	Source() : arr(nullptr) {}

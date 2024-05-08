@@ -21,6 +21,7 @@ bool Game::GameShouldClose() const
 void Game::Init()
 {
 	src = Source{gen_source()};
+	sample_noise(src);
 }
 
 void Game::Tick()
@@ -34,13 +35,12 @@ void Game::Tick()
 void Game::Draw() const
 {
 	ClearBackground(BLACK);
-	draw_inside(src);
+	//draw_inside(src);
 	march_squares(src);
-	//draw_points(src);
-	
+	draw_points(src);
 }
 
 void Game::Update()
 {
-	sample_noise(src);
+	//sample_noise(src);
 }
