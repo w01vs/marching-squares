@@ -94,6 +94,63 @@ void draw_case(const int idx, float data[], float cases[], const Color color = G
 	}
 }
 
+std::optional<std::vector<std::pair<Vector2, Vector2>>> get_lines(const int idx, float data[], float cases[])
+{
+	std::vector<std::pair<Vector2, Vector2>> ret;
+	const float y_ = (float)y(idx) * (CELL * 1);
+	const float x_ = (float)x(idx) * (CELL * 1);
+	// data order:
+	// top left
+	// top right
+	// bottom right
+	// bottom left
+
+	// Predefined edge points
+	Vector2 top_edge = {x_ + (float)CELL / 2, y_};
+	Vector2 left_edge = {x_, y_ + (float)CELL / 2};
+	Vector2 right_edge = {x_ + (float)CELL, y_ + (float)CELL / 2};
+	Vector2 bottom_edge = {x_ + (float)CELL / 2, y_ + (float)CELL};
+
+	switch((unsigned char)(cases[0] + (cases[1] * 2) + (cases[2] * 4) + (cases[3] * 8)))
+	{
+		case 1:
+		case 14:
+			ret.emplace_back(top_edge, left_edge);
+			break;
+		case 2:
+		case 13:
+			ret.emplace_back(top_edge, right_edge);
+			break;
+		case 4:
+		case 11:
+			ret.emplace_back(right_edge, bottom_edge);
+			break;
+		case 5:
+			ret.emplace_back(top_edge, left_edge);
+			ret.emplace_back(right_edge, bottom_edge);
+			break;
+		case 7:
+		case 8:
+			ret.emplace_back(bottom_edge, left_edge);
+			break;
+		case 6:
+		case 9:
+			ret.emplace_back(top_edge, bottom_edge);
+			break;
+		case 10:
+			ret.emplace_back(top_edge, right_edge);
+			ret.emplace_back(bottom_edge, left_edge);
+			break;
+		case 3:
+		case 12:
+			ret.emplace_back(left_edge, right_edge);
+			break;
+		default:
+			return {};
+	}
+	return ret;
+}
+
 void march_squares(const Source& src)
 {
 	const std::array<float, (size_t)TOTAL>* arr = src.arr;
@@ -117,6 +174,28 @@ void march_squares(const Source& src)
 		float pure_vals[4] = {arr->at(i) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH) < ACTIVE_THRESHOLD ? 0.0f : 1.0f};
 		draw_case(i, vals, pure_vals, GREEN, false);
 	}
+}
+
+std::optional<std::vector<std::pair<Vector2, Vector2>>> march_square(const Source& src, int i)
+{
+	const std::array<float, (size_t)TOTAL>* arr = src.arr;
+	// For now use 0 or 1, interpolation later
+	if((i > WIDTH && i % WIDTH == WIDTH - 1) || i >= TOTAL - WIDTH)
+		return {};
+	float vals[4] = {
+		arr->at(i),
+		arr->at(i + 1),
+		arr->at(i + WIDTH + 1),
+		arr->at(i + WIDTH)
+	};
+
+	for(int j = 0; j < 4; j++)
+	{
+		vals[j] = (vals[j] + 1.0f) / 2.0f;
+		vals[j] = vals[j] < INTERPOLATE_THRESHOLD ? -vals[j] : vals[j];
+	}
+	float pure_vals[4] = {arr->at(i) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH) < ACTIVE_THRESHOLD ? 0.0f : 1.0f};
+	return get_lines(i, vals, pure_vals);
 }
 
 void draw_points(const Source& src)

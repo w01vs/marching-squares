@@ -17,12 +17,15 @@ public:
 	void Tick();
 
 private:
-	void Draw() const;
+	void Draw();
 	void Update();
 	void Init();
 
 	bool D3 = false;
 	Camera3D camera;
+	size_t lines = 0;
+
+	std::array<std::pair<Vector2, Vector2>, (size_t) TOTAL>* line_buffer;
 
 	Source src;
 };

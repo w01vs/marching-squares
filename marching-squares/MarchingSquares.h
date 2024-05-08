@@ -5,13 +5,15 @@
 #include "Settings.h"
 #include <random>
 #include "OpenSimplex.h"
+#include <vector>
+#include <optional>
 
 #define INTERPOLATE_THRESHOLD 0.5f
 #define ACTIVE_THRESHOLD 0
 
 enum
 {
-	CELL = 8,
+	CELL = 10,
 	WIDTH = SCREEN_WIDTH / CELL + 1,
 	HEIGHT = SCREEN_HEIGHT / CELL + 1,
 	TOTAL = WIDTH * HEIGHT
@@ -58,6 +60,7 @@ struct Source
 
 void draw_inside(const Source& src);
 void march_squares(const Source& src);
+[[nodiscard]] std::optional<std::vector<std::pair<Vector2, Vector2>>> march_square(const Source& src, int i);
 void sample_noise(Source& src);
 void draw_points(const Source& src);
 void print_points(const Source& src);
