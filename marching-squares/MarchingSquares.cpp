@@ -24,7 +24,7 @@ std::array<float, (size_t)TOTAL> gen_source()
 	return res;
 }
 
-void draw_point(const int index, const Color c) { DrawRectangle(x(index) * CELL - 1, y(index) * CELL - 1, 2, 2, c); }
+void draw_point(const int index, const Color c) { DrawRectangle(x(index) * CELL - 2, y(index) * CELL - 1, 4, 4, c); }
 
 void draw_case(const int idx, float data[], float cases[], const bool interpolate = false)
 {
@@ -59,19 +59,6 @@ void draw_case(const int idx, float data[], float cases[], const bool interpolat
 	{
 	case 1:
 	case 14:
-		/*
-		 move the line according to point values.
-		 in case 14
-		 *--/-o
-		 | /  |
-		 |/   |
-		 |    |
-		 o----o
-
-		 the top left corner is lower than  0.5f
-		 move the top edge intersection to the right with topleft/ topleft+topright / 2 * CELL
-		 move the left edge intersection to the top with topleft/ topleft+bottomleft / 2 * CELL
-		*/
 		DrawLineV(top_edge, left_edge, BLACK);
 		break;
 	case 2:
@@ -133,7 +120,7 @@ void draw_points(const Source& src)
 	{
 		if(i > WIDTH && i % WIDTH == WIDTH)
 			continue;
-		const auto c = (unsigned char)((arr[i] + 10) / 20 * 255);
+		const auto c = (unsigned char)(arr[i] * 255);
 		//const auto color = Color{ c, c, c, 255 }; // for interpolation stuff
 		const auto color = arr[i] < 0.5 ? BLACK : WHITE;
 		draw_point(i, color);
@@ -158,6 +145,26 @@ void print_points(const Source& src)
 
 	std::cout << arr[arr.size() - 1] << " ";
 	std::cout << "\n}" << std::endl;
+}
+
+void sample_perlin(Source& src)
+{
+	osn_context* ctx;
+	open_simplex_noise(1234, &ctx); // 1234 is the seed
+	
+	for(int i = 0; i < (int)src.arr.size(); i++)
+	{
+		const int _x = i % WIDTH;
+		const int _y = i / WIDTH;
+
+		src.xoff = (float)_x * src.inc;
+		src.yoff = (float)_y * src.inc;
+
+		src.arr[i] = (float)open_simplex_noise3(ctx, src.xoff, src.yoff, src.zoff);
+	}
+
+	open_simplex_noise_free(ctx);
+	src.zoff += src.z_inc;
 }
 
 

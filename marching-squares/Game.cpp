@@ -20,25 +20,25 @@ bool Game::GameShouldClose() const
 
 void Game::Init()
 {
-	src = {gen_source()};
-	//print_points(src);
+	src = {gen_source() };
 }
 
 void Game::Tick()
 {
 	BeginDrawing();
 	Update();
-	draw_points(src);
-	march_squares(src);
 	Draw();
 	EndDrawing();
 }
 
-void Game::Draw()
+void Game::Draw() const
 {
 	ClearBackground(GREEN);
+	march_squares(src);
+	draw_points(src);
 }
 
 void Game::Update()
 {
+	sample_perlin(src);
 }

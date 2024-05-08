@@ -139,9 +139,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MarchingSquares.cpp" />
     <ClCompile Include="MarchingSquares.h" />
+    <ClCompile Include="OpenSimplex.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h" />
+    <ClInclude Include="OpenSimplex.h" />
     <ClInclude Include="Settings.h" />
   </ItemGroup>
   <ItemGroup>

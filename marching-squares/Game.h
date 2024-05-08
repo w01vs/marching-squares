@@ -17,7 +17,7 @@ public:
 	void Tick();
 
 private:
-	void Draw();
+	void Draw() const;
 	void Update();
 	void Init();
 
