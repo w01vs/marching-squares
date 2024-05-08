@@ -4,7 +4,7 @@
 #include "Settings.h"
 
 int main() {
-	Game game{ SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "Game Window" };
+	Game game{ SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "Game Window", false};
 
 
 	while (!game.GameShouldClose()) {
