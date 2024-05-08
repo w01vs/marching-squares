@@ -24,7 +24,11 @@ void Game::Init()
 {
 	src = Source{gen_source()};
 	// only when visualizing it
-	src.z_inc = random(0.9f, 1.2f);
+	src.zoff = random(0, 25);
+	src.xoff = random(0, 25);
+	src.yoff = random(0, 25);
+	src.z_inc = GetRandomValue(0, 1) == 0 ? -random(1, 5) :random(1,5);
+	
 
 	sample_noise(src);
 	camera.position = {0.0f, 0.0f, 0.0f};
@@ -70,6 +74,7 @@ void Game::Draw()
 		}
 		else
 		{
+			src.z_inc = GetRandomValue(0, 1) == 0 ? -random(1, 5) : random(1, 5);
 			sample_noise(src);	
 			lines = 0;
 			delete line_buffer;
