@@ -13,7 +13,7 @@
 
 enum
 {
-	CELL = 10,
+	CELL = 10, // on high resolutions, keep higher than 8, lines can be weird and performance will drop fast, even multi-threaded
 	WIDTH = SCREEN_WIDTH / CELL + 1,
 	HEIGHT = SCREEN_HEIGHT / CELL + 1,
 	TOTAL = WIDTH * HEIGHT,
