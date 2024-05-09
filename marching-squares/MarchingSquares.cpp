@@ -153,16 +153,14 @@ std::optional<std::vector<std::pair<Vector2, Vector2>>> get_lines(const int idx,
 	return ret;
 }
 
-void threaded_squares(const int begin, const int end, const Source& src, std::vector<std::vector<std::optional<std::vector<std::pair<Vector2, Vector2>>>>>* res, std::mutex* lock)
+void threaded_squares(const int begin, const int end, const Source& src, std::vector<std::vector<std::optional<std::vector<std::pair<Vector2, Vector2>>>>>* res, const int idx)
 {
 	std::vector<std::optional<std::vector<std::pair<Vector2, Vector2>>>> internal_res;
 	for(int i = begin; i < end; ++i)
 	{
 		internal_res.emplace_back(march_square(src, i));
 	}
-	lock->lock();
-	res->emplace_back(internal_res);
-	lock->unlock();
+	(*res)[idx] = internal_res;
 }
 
 void march_squares(const Source& src)
@@ -173,19 +171,18 @@ void march_squares(const Source& src)
 	if(TOTAL >= 1000)
 	{
 		std::vector<std::vector<std::optional<std::vector<std::pair<Vector2, Vector2>>>>> res;
-		std::mutex lock;
 		std::vector<std::thread> threads;
 		const auto max_threads = std::thread::hardware_concurrency();
 		const int thread_count = THREADS > max_threads ? max_threads : THREADS;
 		threads.reserve(thread_count);
-
+		res.resize(thread_count);
 		const int thread_range = TOTAL / thread_count;
 
 		for(int i = 0; i < thread_count; i++)
 		{
 			const int begin = i * thread_range;
 			const int end = (i + 1) * thread_range;
-			threads.emplace_back(threaded_squares, begin, end, std::ref(src), &res, &lock);
+			threads.emplace_back(threaded_squares, begin, end, std::ref(src), &res, i);
 		}
 
 		for(int i = 0; i < thread_count; i++)
