@@ -1,4 +1,6 @@
 #pragma once
-inline constexpr int SCREEN_WIDTH = 1260;
-inline constexpr int SCREEN_HEIGHT = 840;
+inline constexpr int SCREEN_WIDTH = 1920;
+inline constexpr int SCREEN_HEIGHT = 1000;
 inline constexpr int FPS = 60;
+inline constexpr bool VISUALISE = true;
+inline constexpr bool D3 = false;

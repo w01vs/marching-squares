@@ -9,7 +9,7 @@
 
 class Game {
 public:
-	Game(int width, int height, int fps, const std::string& title, bool D3 = false);
+	Game(int width, int height, int fps, const std::string& title);
 	~Game() noexcept;
 	Game& operator=(const Game& other) = delete;
 	Game(const Game& other) = delete;
@@ -21,11 +21,11 @@ private:
 	void Update();
 	void Init();
 
-	bool D3 = false;
 	Camera3D camera;
 	size_t lines = 0;
 
 	std::array<std::pair<Vector2, Vector2>, (size_t) TOTAL>* line_buffer;
+	osn_context* ctx;
 
 	Source src;
 };

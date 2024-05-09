@@ -1,4 +1,5 @@
 #include "MarchingSquares.h"
+#include <thread>
 
 [[nodiscard]] int x(const int idx) { return idx % WIDTH; }
 
@@ -176,7 +177,7 @@ void march_squares(const Source& src)
 	}
 }
 
-std::optional<std::vector<std::pair<Vector2, Vector2>>> march_square(const Source& src, int i)
+std::optional<std::vector<std::pair<Vector2, Vector2>>> march_square(const Source& src, const int i)
 {
 	const std::array<float, (size_t)TOTAL>* arr = src.arr;
 	// For now use 0 or 1, interpolation later
@@ -248,21 +249,55 @@ void print_points(const Source& src)
 	std::cout << "\n}" << std::endl;
 }
 
-void sample_noise(Source& src)
+
+void threaded_noise(const int start, const int end, const Source* src, const osn_context* ctx)
 {
-	osn_context* ctx;
-	open_simplex_noise(1234, &ctx); // 1234 is the seed
-	
-	for(int i = 0; i < (int)src.arr->size(); i++)
+	for(int i = start; i < end; i++)
 	{
 		const int _x = i % WIDTH;
 		const int _y = i / WIDTH;
 
-		src.xoff = (float)_x * src.inc;
-		src.yoff = (float)_y * src.inc;
-		(*src.arr)[i] = (float)open_simplex_noise3(ctx, src.xoff, src.yoff, src.zoff);
+		const auto value = (float)open_simplex_noise3(ctx, (float)_x * src->inc, (float)_y * src->inc, src->zoff);
+		
+		(*src->arr)[i] = value;
 	}
+}
 
+void sample_noise(Source& src, osn_context* ctx)
+{
+	open_simplex_noise(1234, &ctx); // 1234 is the seed
+
+	if(src.arr->size() >= 1000)
+	{
+		std::vector<std::thread> threads;
+		const auto max_threads = std::thread::hardware_concurrency();
+		const int thread_count = THREADS > max_threads ? max_threads : THREADS;
+		threads.reserve(thread_count);
+
+		const int thread_range = TOTAL / thread_count;
+
+		for(int i = 0; i < thread_count; i++)
+		{
+			const int begin = i * thread_range;
+			const int end = (i + 1) * thread_range;
+			threads.emplace_back(threaded_noise, begin, end, &src, ctx);
+		}
+
+		for(int i = 0; i < thread_count; i++)
+		{
+			threads[i].join();
+		}
+	}
+	else
+	{
+		for(int i = 0; i < (int)src.arr->size(); i++)
+		{
+			const int _x = i % WIDTH;
+			const int _y = i / WIDTH;
+
+			(*src.arr)[i] = (float)open_simplex_noise3(ctx, (float)_x * src.inc, (float)_y * src.inc, src.zoff);
+		}
+	}
 	open_simplex_noise_free(ctx);
 	src.zoff += src.z_inc;
 }

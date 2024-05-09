@@ -16,14 +16,13 @@ enum
 	CELL = 10,
 	WIDTH = SCREEN_WIDTH / CELL + 1,
 	HEIGHT = SCREEN_HEIGHT / CELL + 1,
-	TOTAL = WIDTH * HEIGHT
+	TOTAL = WIDTH * HEIGHT,
+	THREADS = 10
 };
 
 struct Source
 {
 	std::array<float, (size_t)TOTAL>* arr;
-	float xoff = 0;
-	float yoff = 0;
 	float inc = 0.055f;
 	float z_inc = 0.0035f;
 	float zoff = 0;
@@ -43,8 +42,6 @@ struct Source
 		delete arr;
 		arr = other.arr;
 		other.arr = nullptr;
-		xoff = other.xoff;
-		yoff = other.yoff;
 		inc = other.inc;
 		z_inc = other.z_inc;
 		zoff = other.zoff;
@@ -61,7 +58,7 @@ struct Source
 void draw_inside(const Source& src);
 void march_squares(const Source& src);
 [[nodiscard]] std::optional<std::vector<std::pair<Vector2, Vector2>>> march_square(const Source& src, int i);
-void sample_noise(Source& src);
+void sample_noise(Source& src, osn_context* ctx);
 void draw_points(const Source& src);
 void print_points(const Source& src);
 float random(float, float);
