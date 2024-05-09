@@ -1,5 +1,6 @@
 #include "MarchingSquares.h"
 #include <thread>
+#include <mutex>
 
 [[nodiscard]] int x(const int idx) { return idx % WIDTH; }
 
@@ -152,28 +153,83 @@ std::optional<std::vector<std::pair<Vector2, Vector2>>> get_lines(const int idx,
 	return ret;
 }
 
+void threaded_squares(const int begin, const int end, const Source& src, std::vector<std::vector<std::optional<std::vector<std::pair<Vector2, Vector2>>>>>* res, std::mutex* lock)
+{
+	std::vector<std::optional<std::vector<std::pair<Vector2, Vector2>>>> internal_res;
+	for(int i = begin; i < end; ++i)
+	{
+		internal_res.emplace_back(march_square(src, i));
+	}
+	lock->lock();
+	res->emplace_back(internal_res);
+	lock->unlock();
+}
+
 void march_squares(const Source& src)
 {
 	const std::array<float, (size_t)TOTAL>* arr = src.arr;
-	for(int i = 0; i < (int)arr->size() - WIDTH; ++i)
+	
+	// disabled since it dont work, maybe ill fix it later
+	if(TOTAL >= 1000)
 	{
-		if(i > WIDTH && i % WIDTH == WIDTH - 1)
-			continue;
-		// For now use 0 or 1, interpolation later
-		float vals[4] = {
-			arr->at(i),
-			arr->at(i + 1),
-			arr->at(i + WIDTH + 1),
-			arr->at(i + WIDTH)
-		};
+		std::vector<std::vector<std::optional<std::vector<std::pair<Vector2, Vector2>>>>> res;
+		std::mutex lock;
+		std::vector<std::thread> threads;
+		const auto max_threads = std::thread::hardware_concurrency();
+		const int thread_count = THREADS > max_threads ? max_threads : THREADS;
+		threads.reserve(thread_count);
 
-		for(int j = 0; j < 4; j++)
+		const int thread_range = TOTAL / thread_count;
+
+		for(int i = 0; i < thread_count; i++)
 		{
-			vals[j] = (vals[j] + 1.0f) / 2.0f;
-			vals[j] = vals[j] < INTERPOLATE_THRESHOLD ? -vals[j] : vals[j];
+			const int begin = i * thread_range;
+			const int end = (i + 1) * thread_range;
+			threads.emplace_back(threaded_squares, begin, end, std::ref(src), &res, &lock);
 		}
-		float pure_vals[4] = {arr->at(i) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH) < ACTIVE_THRESHOLD ? 0.0f : 1.0f};
-		draw_case(i, vals, pure_vals, GREEN, false);
+
+		for(int i = 0; i < thread_count; i++)
+		{
+			threads[i].join();
+		}
+
+		for(int i = 0; i < res.size(); i++)
+		{
+			for(int j = 0; j < res[i].size(); j++)
+			{
+				if(res[i][j].has_value())
+				{
+					const auto line = res[i][j].value();
+					for(int l = 0; l < line.size(); l++)
+					{
+						DrawLineV(line[l].first, line[l].second, GREEN);
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for(int i = 0; i < (int)arr->size() - WIDTH; ++i)
+		{
+			if(i > WIDTH && i % WIDTH == WIDTH - 1)
+				continue;
+			// For now use 0 or 1, interpolation later
+			float vals[4] = {
+				arr->at(i),
+				arr->at(i + 1),
+				arr->at(i + WIDTH + 1),
+				arr->at(i + WIDTH)
+			};
+
+			for(int j = 0; j < 4; j++)
+			{
+				vals[j] = (vals[j] + 1.0f) / 2.0f;
+				vals[j] = vals[j] < INTERPOLATE_THRESHOLD ? -vals[j] : vals[j];
+			}
+			float pure_vals[4] = {arr->at(i) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH + 1) < ACTIVE_THRESHOLD ? 0.0f : 1.0f, arr->at(i + WIDTH) < ACTIVE_THRESHOLD ? 0.0f : 1.0f};
+			draw_case(i, vals, pure_vals, GREEN, false);
+		}
 	}
 }
 
@@ -267,7 +323,7 @@ void sample_noise(Source& src, osn_context* ctx)
 {
 	open_simplex_noise(1234, &ctx); // 1234 is the seed
 
-	if(src.arr->size() >= 1000)
+	if(TOTAL >= 1000)
 	{
 		std::vector<std::thread> threads;
 		const auto max_threads = std::thread::hardware_concurrency();

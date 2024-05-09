@@ -46,53 +46,49 @@ void Game::Tick()
 void Game::Draw()
 {
 	ClearBackground(BLACK);
-	if(!D3)
+	// Draw line by line marching squares
+	if(VISUALISE)
 	{
-		//draw_inside(src);
-		//march_squares(src);
-		draw_points(src);
-		// Draw line by line marching squares
-		if(VISUALISE)
+		if(lines != TOTAL - 1)
 		{
-			if(lines != TOTAL - 1)
+			if(const auto new_lines = march_square(src, (int)lines); new_lines.has_value())
 			{
-				if(const auto new_lines = march_square(src, (int)lines); new_lines.has_value())
+				WaitTime(0.001);
+				for(size_t i = 0; i < new_lines.value().size(); i++)
 				{
-					WaitTime(0.001);
-					for(size_t i = 0; i < new_lines.value().size(); i++)
-					{
-						(*line_buffer)[lines] = new_lines.value()[i];
-						lines++;
-					}
-				}
-				else
+					(*line_buffer)[lines] = new_lines.value()[i];
 					lines++;
+				}
 			}
 			else
-			{
-				src.z_inc = GetRandomValue(0, 1) == 0 ? -random(1, 5) : random(1, 5);
-				sample_noise(src, ctx);
-				lines = 0;
-				delete line_buffer;
-				line_buffer = new std::array<std::pair<Vector2, Vector2>, TOTAL>;
-			}
-
-			for(size_t i = 0; i < lines && lines < TOTAL; i++)
-			{
-				DrawLineV(line_buffer->at(i).first, line_buffer->at(i).second, GREEN);
-			}
+				lines++;
 		}
-		
+		else
+		{
+			src.z_inc = GetRandomValue(0, 1) == 0 ? -random(1, 5) : random(1, 5);
+			sample_noise(src, ctx);
+			lines = 0;
+			delete line_buffer;
+			line_buffer = new std::array<std::pair<Vector2, Vector2>, TOTAL>;
+		}
+
+		for(size_t i = 0; i < lines && lines < TOTAL; i++)
+		{
+			DrawLineV(line_buffer->at(i).first, line_buffer->at(i).second, GREEN);
+		}
 	}
-	else
+
+	else if(D3)
 	{
 		BeginMode3D(camera);
 
-
-
-
-
 		EndMode3D();
+	}
+	else
+	{
+		//draw_inside(src);
+		march_squares(src);
+		draw_points(src);
 	}
 
 
