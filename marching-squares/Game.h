@@ -4,7 +4,13 @@
 #include <raylib.h>
 #include <cassert>
 #include <array>
-#include "MarchingSquares.h"
+#include "Settings.h"
+#if D3
+	#include "MarchingCubes.h"
+#else
+	#include "MarchingSquares.h"
+#endif
+
 
 
 class Game {
@@ -26,6 +32,7 @@ private:
 
 	std::array<std::pair<Vector2, Vector2>, (size_t) TOTAL>* line_buffer;
 	osn_context* ctx;
+	int x = 0, y = 0, z = 0;
 
 	Source src;
 };

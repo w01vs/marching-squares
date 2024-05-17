@@ -310,7 +310,7 @@ void threaded_noise(const int start, const int end, const Source* src, const osn
 		const int _x = i % WIDTH;
 		const int _y = i / WIDTH;
 
-		const auto value = (float)open_simplex_noise3(ctx, (float)_x * src->inc, (float)_y * src->inc, src->zoff);
+		const auto value = (float)open_simplex_noise3(ctx, (float)_x * src->inc, (float)_y * src->inc, src->woff);
 		
 		(*src->arr)[i] = value;
 	}
@@ -348,11 +348,11 @@ void sample_noise(Source& src, osn_context* ctx)
 			const int _x = i % WIDTH;
 			const int _y = i / WIDTH;
 
-			(*src.arr)[i] = (float)open_simplex_noise3(ctx, (float)_x * src.inc, (float)_y * src.inc, src.zoff);
+			(*src.arr)[i] = (float)open_simplex_noise3(ctx, (float)_x * src.inc, (float)_y * src.inc, src.woff);
 		}
 	}
 	open_simplex_noise_free(ctx);
-	src.zoff += src.z_inc;
+	src.woff += src.w_inc;
 }
 
 

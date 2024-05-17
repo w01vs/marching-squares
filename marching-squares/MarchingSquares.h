@@ -24,8 +24,8 @@ struct Source
 {
 	std::array<float, (size_t)TOTAL>* arr;
 	float inc = 0.055f;
-	float z_inc = 0.0035f;
-	float zoff = 0;
+	float w_inc = 0.0035f;
+	float woff = 0;
 
 	Source() : arr(nullptr) {}
 
@@ -43,8 +43,8 @@ struct Source
 		arr = other.arr;
 		other.arr = nullptr;
 		inc = other.inc;
-		z_inc = other.z_inc;
-		zoff = other.zoff;
+		w_inc = other.w_inc;
+		woff = other.woff;
 
 		return *this;
 	}
